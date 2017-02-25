@@ -1,3 +1,3 @@
-MODULE = avsextrem-drivers
+MODULE = board
 
 include $(RIOTBASE)/Makefile.base

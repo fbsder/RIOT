@@ -216,9 +216,9 @@ void auto_init(void)
     auto_init_kw2xrf();
 #endif
 
-#ifdef MODULE_NETDEV2_TAP
-    extern void auto_init_netdev2_tap(void);
-    auto_init_netdev2_tap();
+#ifdef MODULE_NETDEV_TAP
+    extern void auto_init_netdev_tap(void);
+    auto_init_netdev_tap();
 #endif
 
 #ifdef MODULE_NORDIC_SOFTDEVICE_BLE
@@ -318,6 +318,10 @@ void auto_init(void)
 #ifdef MODULE_VEML6070
     extern void auto_init_veml6070(void);
     auto_init_veml6070();
+#endif
+#ifdef MODULE_ADXL345
+    extern void auto_init_adxl345(void);
+    auto_init_adxl345();
 #endif
 
 #endif /* MODULE_AUTO_INIT_SAUL */

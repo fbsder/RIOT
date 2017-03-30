@@ -22,6 +22,9 @@ endif
 ifneq (,$(filter isl29125,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/drivers/isl29125/include
 endif
+ifneq (,$(filter hd44780,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/hd44780/include
+endif
 ifneq (,$(filter lps331ap,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/drivers/lps331ap/include
 endif
@@ -102,4 +105,13 @@ ifneq (,$(filter sdcard_spi,$(USEMODULE)))
 endif
 ifneq (,$(filter veml6070,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/drivers/veml6070/include
+endif
+ifneq (,$(filter adxl345,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/adxl345/include
+endif
+ifneq (,$(filter uart_half_duplex,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/uart_half_duplex/include
+endif
+ifneq (,$(filter feetech,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/feetech/include
 endif

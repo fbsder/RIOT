@@ -371,8 +371,8 @@ endif
 
 ifneq (,$(filter posix_sockets,$(USEMODULE)))
   USEMODULE += bitfield
-  USEMODULE += posix
   USEMODULE += random
+  USEMODULE += vfs
 endif
 
 ifneq (,$(filter rtt_stdio,$(USEMODULE)))
@@ -617,6 +617,13 @@ endif
 
 ifneq (,$(filter sock_dns,$(USEMODULE)))
   USEMODULE += sock_util
+endif
+
+ifneq (,$(filter spiffs,$(USEMODULE)))
+    USEPKG += spiffs
+    USEMODULE += vfs
+    USEMODULE += spiffs_fs
+    USEMODULE += mtd
 endif
 
 # include package dependencies

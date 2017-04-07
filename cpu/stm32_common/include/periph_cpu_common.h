@@ -28,6 +28,14 @@ extern "C" {
 #endif
 
 /**
+ * @brief Linker script provided symbol for CPUID location
+ */
+extern uint32_t _cpuid_address;
+/**
+ * @brief   Starting offset of CPU_ID
+ */
+#define CPUID_ADDR          (&_cpuid_address)
+/**
  * @brief   Length of the CPU_ID in octets
  */
 #define CPUID_LEN           (12U)
@@ -62,10 +70,11 @@ typedef enum {
 #if defined(CPU_FAM_STM32L0)
     AHB,            /**< AHB bus */
     IOP,            /**< IOP bus */
-#elif defined(CPU_FAM_STM32L1) || defined(CPU_FAM_STM32F1)\
+#elif defined(CPU_FAM_STM32L1) || defined(CPU_FAM_STM32F1) \
     || defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F3)
     AHB,            /**< AHB bus */
-#elif defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4)
+#elif defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) \
+    || defined(CPU_FAM_STM32L4)
     AHB1,           /**< AHB1 bus */
     AHB2,           /**< AHB2 bus */
     AHB3            /**< AHB3 bus */

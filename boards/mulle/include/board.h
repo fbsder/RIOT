@@ -7,7 +7,7 @@
  */
 
 /**
- * @defgroup    board_mulle Eistec Mulle
+ * @defgroup    boards_mulle Eistec Mulle
  * @ingroup     boards
  * @brief       Board specific files for Eistec Mulle IoT boards
  * @{
@@ -33,6 +33,11 @@
 
 /** Disable hardware watchdog, for debugging purposes, don't use this on production builds. */
 #define DISABLE_WDOG    1
+
+/**
+ * @brief Use the UART1 for STDIO on this board
+ */
+#define UART_STDIO_DEV      UART_DEV(1)
 
 /**
  * @brief   xtimer configuration

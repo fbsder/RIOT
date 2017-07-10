@@ -2,6 +2,9 @@ PSEUDOMODULES += auto_init_gnrc_rpl
 PSEUDOMODULES += can_mbox
 PSEUDOMODULES += can_pm
 PSEUDOMODULES += can_raw
+PSEUDOMODULES += cbor_ctime
+PSEUDOMODULES += cbor_float
+PSEUDOMODULES += cbor_semantic_tagging
 PSEUDOMODULES += conn_can_isotp_multi
 PSEUDOMODULES += core_%
 PSEUDOMODULES += emb6_router
@@ -72,6 +75,10 @@ PSEUDOMODULES += bme280
 PSEUDOMODULES += adc081c
 PSEUDOMODULES += adc101c
 PSEUDOMODULES += adc121c
+
+# include variants of SX127X drivers as pseudo modules
+PSEUDOMODULES += sx1272
+PSEUDOMODULES += sx1276
 
 # add all pseudo random number generator variants as pseudomodules
 PSEUDOMODULES += prng_%

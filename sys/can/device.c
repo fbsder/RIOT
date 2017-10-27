@@ -49,24 +49,6 @@ static void pm_cb(void *arg);
 static void pm_reset(candev_dev_t *candev_dev, uint32_t value);
 #endif
 
-static inline enum can_msg _can_event_error_to_msg(candev_event_t error)
-{
-    switch (error) {
-    case CANDEV_EVENT_TX_ERROR:
-        return CAN_MSG_TX_ERROR;
-    case CANDEV_EVENT_RX_ERROR:
-        return CAN_MSG_RX_ERROR;
-    case CANDEV_EVENT_BUS_OFF:
-        return CAN_MSG_BUS_OFF;
-    case CANDEV_EVENT_ERROR_PASSIVE:
-        return CAN_MSG_ERROR_PASSIVE;
-    case CANDEV_EVENT_ERROR_WARNING:
-        return CAN_MSG_ERROR_WARNING;
-    default:
-        return 0;
-    }
-}
-
 static void _can_event(candev_t *dev, candev_event_t event, void *arg)
 {
     msg_t msg;
@@ -159,7 +141,10 @@ static int power_down(candev_dev_t *candev_dev)
 #endif
     canopt_state_t state = CANOPT_STATE_SLEEP;
     int res = dev->driver->set(dev, CANOPT_STATE, &state, sizeof(state));
-    dev->state = CAN_STATE_SLEEPING;
+
+    if (dev->state != CAN_STATE_BUS_OFF) {
+        dev->state = CAN_STATE_SLEEPING;
+    }
 
 #ifdef MODULE_CAN_PM
     xtimer_remove(&candev_dev->pm_timer);
@@ -211,6 +196,9 @@ static void *_can_device_thread(void *args)
 
     candev_dev->pid = thread_getpid();
 
+#ifdef MODULE_CAN_TRX
+    can_trx_init(candev_dev->trx);
+#endif
 #ifdef MODULE_CAN_PM
     if (candev_dev->rx_inactivity_timeout == 0) {
         candev_dev->rx_inactivity_timeout = CAN_DEVICE_PM_DEFAULT_RX_TIMEOUT;
@@ -221,9 +209,6 @@ static void *_can_device_thread(void *args)
     candev_dev->pm_timer.callback = pm_cb;
     candev_dev->pm_timer.arg = candev_dev;
     pm_reset(candev_dev, candev_dev->rx_inactivity_timeout);
-#endif
-#ifdef MODULE_CAN_TRX
-    can_trx_init(candev_dev->trx);
 #endif
 
     int res;
@@ -240,7 +225,7 @@ static void *_can_device_thread(void *args)
     candev_dev->ifnum = can_dll_register_candev(candev_dev);
 
     dev->driver->init(dev);
-    dev->state = CAN_STATE_ERROR_ACTIVE;
+    power_up(candev_dev);
 
     while (1) {
         msg_receive(&msg);

@@ -208,7 +208,7 @@ enum {
  */
 typedef struct {
     uint16_t preamble_len;             /**< Length of preamble header */
-    uint8_t power;                     /**< Signal power */
+    int8_t power;                      /**< Signal power */
     uint8_t bandwidth;                 /**< Signal bandwidth */
     uint8_t datarate;                  /**< Spreading factor rate, e.g datarate */
     uint8_t coderate;                  /**< Error coding rate */
@@ -321,34 +321,6 @@ void sx127x_init_radio_settings(sx127x_t *dev);
  * @return random 32 bits value
  */
 uint32_t sx127x_random(sx127x_t *dev);
-
-/**
- * @brief   sx127x DIO0 IRQ handler.
- *
- * @param[in] arg                      An sx127x device instance
- */
-void sx127x_on_dio0(void *arg);
-
-/**
- * @brief   sx127x DIO1 IRQ handler.
- *
- * @param[in] arg                      An sx127x device instance
- */
-void sx127x_on_dio1(void *arg);
-
-/**
- * @brief   sx127x DIO2 IRQ handler.
- *
- * @param[in] arg                      An sx127x device instance
- */
-void sx127x_on_dio2(void *arg);
-
-/**
- * @brief   sx127x DIO3 IRQ handler.
- *
- * @param[in] arg                      An sx127x device instance
- */
-void sx127x_on_dio3(void *arg);
 
 /**
  * @brief   Start a channel activity detection.
@@ -644,7 +616,7 @@ uint8_t sx127x_get_tx_power(const sx127x_t *dev);
  * @param[in] dev                      The sx127x device descriptor
  * @param[in] power                    The TX power
  */
-void sx127x_set_tx_power(sx127x_t *dev, uint8_t power);
+void sx127x_set_tx_power(sx127x_t *dev, int8_t power);
 
 /**
  * @brief   Gets the SX127X preamble length

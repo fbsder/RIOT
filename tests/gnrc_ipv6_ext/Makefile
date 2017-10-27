@@ -6,7 +6,7 @@ BOARD_INSUFFICIENT_MEMORY := airfy-beacon chronos maple-mini msb-430 msb-430h \
                              nrf51dongle nrf6310 nucleo32-f031 nucleo32-f042 \
                              nucleo32-l031 nucleo-f030 nucleo-f103 nucleo-f334 nucleo-l053 \
                              pca10000 pca10005 spark-core stm32f0discovery telosb \
-                             weio wsn430-v1_3b wsn430-v1_4 yunjia-nrf51822 z1
+                             wsn430-v1_3b wsn430-v1_4 yunjia-nrf51822 z1
 
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
@@ -30,8 +30,6 @@ CFLAGS += -DDEVELHELP
 
 include $(RIOTBASE)/Makefile.include
 
-# This requires ENABLE_DEBUG in gnrc_ipv6.c to be 1
+# The test can check more things with ENABLE_DEBUG set to 1 in gnrc_ipv6.c
 test:
-# `testrunner` calls `make term` recursively, results in duplicated `TERMFLAGS`.
-# So clears `TERMFLAGS` before run.
-	TERMFLAGS= tests/01-run.py
+	tests/01-run.py

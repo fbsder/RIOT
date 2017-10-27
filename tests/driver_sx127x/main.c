@@ -117,6 +117,9 @@ int lora_setup_cmd(int argc, char **argv) {
 
 int random_cmd(int argc, char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     printf("random: number from sx127x: %u\n",
            (unsigned int) sx127x_random((sx127x_t*) netdev));
 
@@ -218,7 +221,7 @@ int send_cmd(int argc, char **argv)
         return -1;
     }
 
-    printf("sending \"%s\" payload (%d bytes)\n",
+    printf("sending \"%s\" payload (%zd bytes)\n",
            argv[1], strlen(argv[1]) + 1);
 
     struct iovec vec[1];
@@ -233,6 +236,9 @@ int send_cmd(int argc, char **argv)
 
 int listen_cmd(int argc, char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     /* Switch to continuous listen mode */
     netdev->driver->set(netdev, NETOPT_SINGLE_RECEIVE, false, sizeof(uint8_t));
     sx127x_set_rx(&sx127x);
@@ -308,11 +314,13 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
                        (int)packet_info.time_on_air);
                 break;
             case NETDEV_EVENT_TX_COMPLETE:
+                sx127x_set_sleep(&sx127x);
                 puts("Transmission completed");
                 break;
             case NETDEV_EVENT_CAD_DONE:
                 break;
             case NETDEV_EVENT_TX_TIMEOUT:
+                sx127x_set_sleep(&sx127x);
                 break;
             default:
                 printf("Unexpected netdev event received: %d\n", event);
@@ -323,6 +331,8 @@ static void _event_cb(netdev_t *dev, netdev_event_t event)
 
 void *_recv_thread(void *arg)
 {
+    (void)arg;
+
     static msg_t _msg_q[SX127X_LORA_MSG_QUEUE];
     msg_init_queue(_msg_q, SX127X_LORA_MSG_QUEUE);
 

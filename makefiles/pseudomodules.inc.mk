@@ -8,6 +8,7 @@ PSEUDOMODULES += cbor_semantic_tagging
 PSEUDOMODULES += conn_can_isotp_multi
 PSEUDOMODULES += core_%
 PSEUDOMODULES += emb6_router
+PSEUDOMODULES += event_%
 PSEUDOMODULES += gnrc_ipv6_default
 PSEUDOMODULES += gnrc_ipv6_router
 PSEUDOMODULES += gnrc_ipv6_router_default
@@ -86,8 +87,18 @@ PSEUDOMODULES += adc121c
 PSEUDOMODULES += sx1272
 PSEUDOMODULES += sx1276
 
+# include variants of Si70xx drivers as pseudo modules
+PSEUDOMODULES += si7006
+PSEUDOMODULES += si7013
+PSEUDOMODULES += si7020
+PSEUDOMODULES += si7021
+
 # add all pseudo random number generator variants as pseudomodules
 PSEUDOMODULES += prng_%
 
 # STM32 periph pseudomodules
 PSEUDOMODULES += stm32_periph_%
+
+# declare periph submodules as pseudomodules, but exclude periph_common
+PSEUDOMODULES += periph_%
+NO_PSEUDOMODULES += periph_common

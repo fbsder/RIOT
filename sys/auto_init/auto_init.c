@@ -32,10 +32,6 @@
 #include "xtimer.h"
 #endif
 
-#ifdef MODULE_RTC
-#include "periph/rtc.h"
-#endif
-
 #ifdef MODULE_GNRC_SIXLOWPAN
 #include "net/gnrc/sixlowpan.h"
 #endif
@@ -80,10 +76,6 @@
 #include "net/fib.h"
 #endif
 
-#ifdef MODULE_PRNG
-#include "random.h"
-#endif
-
 #ifdef MODULE_GCOAP
 #include "net/gcoap.h"
 #endif
@@ -99,15 +91,12 @@
 void auto_init(void)
 {
 #ifdef MODULE_PRNG
-    random_init(0);
+    void auto_init_random(void);
+    auto_init_random();
 #endif
 #ifdef MODULE_XTIMER
     DEBUG("Auto init xtimer module.\n");
     xtimer_init();
-#endif
-#ifdef MODULE_RTC
-    DEBUG("Auto init rtc module.\n");
-    rtc_init();
 #endif
 #ifdef MODULE_SHT11
     DEBUG("Auto init SHT11 module.\n");

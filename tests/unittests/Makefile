@@ -8,13 +8,16 @@ BOARD_INSUFFICIENT_MEMORY := airfy-beacon \
                              arduino-mkrzero \
                              arduino-uno \
                              arduino-zero \
+                             avsextrem \
                              b-l072z-lrwan1 \
+                             bluepill \
                              calliope-mini \
                              cc2538dk \
                              cc2650-launchpad \
                              cc2650stk \
                              chronos \
                              ek-lm4f120xl \
+                             feather-m0 \
                              limifrog-v1 maple-mini \
                              mbed_lpc1768 \
                              microbit \
@@ -42,8 +45,6 @@ BOARD_INSUFFICIENT_MEMORY := airfy-beacon \
                              openmote \
                              openmote-cc2538 \
                              pba-d-01-kw2x \
-                             pca10000 \
-                             pca10005 \
                              remote-pa \
                              remote-reva \
                              remote-revb \
@@ -85,6 +86,7 @@ ARM_CORTEX_M_BOARDS := airfy-beacon \
                        cc2538dk \
                        ek-lm4f120xl \
                        f4vi1 \
+                       feather-m0 \
                        fox \
                        frdm-k64f \
                        iotlab-m3 \
@@ -121,8 +123,6 @@ ARM_CORTEX_M_BOARDS := airfy-beacon \
                        opencm904 \
                        openmote-cc2538 \
                        pba-d-01-kw2x \
-                       pca10000 \
-                       pca10005 \
                        remote \
                        samd21-xpro \
                        saml21-xpro \

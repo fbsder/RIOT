@@ -418,6 +418,7 @@ endif
 
 ifneq (,$(filter uart_stdio,$(USEMODULE)))
   USEMODULE += isrpipe
+  FEATURES_REQUIRED += periph_uart
 endif
 
 ifneq (,$(filter isrpipe,$(USEMODULE)))
@@ -430,6 +431,10 @@ endif
 
 ifneq (,$(filter posix_semaphore,$(USEMODULE)))
   USEMODULE += sema
+  USEMODULE += xtimer
+endif
+
+ifneq (,$(filter posix_time,$(USEMODULE)))
   USEMODULE += xtimer
 endif
 
@@ -504,6 +509,10 @@ endif
 ifneq (,$(filter libfixmath-unittests,$(USEMODULE)))
   USEPKG += libfixmath
   USEMODULE += libfixmath
+endif
+
+ifneq (,$(filter luid,$(USEMODULE)))
+  FEATURES_OPTIONAL += periph_cpuid
 endif
 
 ifneq (,$(filter fib,$(USEMODULE)))
@@ -594,6 +603,14 @@ ifneq (,$(filter saul_default,$(USEMODULE)))
   USEMODULE += auto_init_saul
 endif
 
+ifneq (,$(filter saul_adc,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_adc
+endif
+
+ifneq (,$(filter saul_gpio,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_gpio
+endif
+
 ifneq (,$(filter saul,$(USEMODULE)))
   USEMODULE += phydat
 endif
@@ -639,6 +656,8 @@ ifneq (,$(filter random,$(USEMODULE)))
   ifneq (,$(filter prng_tinymt32,$(USEMODULE)))
     USEMODULE += tinymt32
   endif
+
+  USEMODULE += luid
 endif
 
 ifneq (,$(filter openthread_contrib,$(USEMODULE)))
@@ -670,6 +689,18 @@ ifneq (,$(filter sock_dns,$(USEMODULE)))
   USEMODULE += sock_util
 endif
 
+ifneq (,$(filter event_%,$(USEMODULE)))
+  USEMODULE += event
+endif
+
+ifneq (,$(filter event_timeout,$(USEMODULE)))
+  USEMODULE += xtimer
+endif
+
+ifneq (,$(filter event,$(USEMODULE)))
+  USEMODULE += core_thread_flags
+endif
+
 ifneq (,$(filter spiffs,$(USEMODULE)))
   USEPKG += spiffs
   USEMODULE += vfs
@@ -686,8 +717,27 @@ USEPKG += nanocoap
 USEMODULE += gnrc_sock_udp
 endif
 
+ifneq (,$(filter luid,$(USEMODULE)))
+  FEATURES_OPTIONAL += periph_cpuid
+endif
+
+# always select gpio (until explicit dependencies are sorted out)
+FEATURES_OPTIONAL += periph_gpio
+
+# always select power management if available
+FEATURES_OPTIONAL += periph_pm
+
 # include package dependencies
 -include $(USEPKG:%=$(RIOTPKG)/%/Makefile.dep)
+
+# remove required features from optional features
+FEATURES_OPTIONAL := $(filter-out $(FEATURES_REQUIRED),$(FEATURES_OPTIONAL))
+
+# add all optional but provided features to the list of used features
+FEATURES_USED := $(sort $(FEATURES_REQUIRED) $(filter $(FEATURES_OPTIONAL),$(FEATURES_PROVIDED)))
+
+# all periph features correspond to a periph submodule
+USEMODULE += $(filter periph_%,$(FEATURES_USED))
 
 # recursively catch transitive dependencies
 USEMODULE := $(sort $(USEMODULE))

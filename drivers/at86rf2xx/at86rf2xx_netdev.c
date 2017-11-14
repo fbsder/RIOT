@@ -81,8 +81,7 @@ static int _init(netdev_t *netdev)
     at86rf2xx_reset(dev);
 
     /* test if the SPI is set up correctly and the device is responding */
-    if (at86rf2xx_reg_read(dev, AT86RF2XX_REG__PART_NUM) !=
-        AT86RF2XX_PARTNUM) {
+    if (at86rf2xx_reg_read(dev, AT86RF2XX_REG__PART_NUM) != AT86RF2XX_PARTNUM) {
         DEBUG("[at86rf2xx] error: unable to read correct part number\n");
         return -1;
     }
@@ -103,7 +102,7 @@ static int _send(netdev_t *netdev, const struct iovec *vector, unsigned count)
     at86rf2xx_tx_prepare(dev);
 
     /* load packet data into FIFO */
-    for (unsigned i = 0; i < count; i++, ptr++) {
+    for (unsigned i = 0; i < count; ++i, ++ptr) {
         /* current packet data + FCS too long */
         if ((len + ptr->iov_len + 2) > AT86RF2XX_MAX_PKT_LENGTH) {
             DEBUG("[at86rf2xx] error: packet too large (%u byte) to be send\n",
@@ -120,7 +119,8 @@ static int _send(netdev_t *netdev, const struct iovec *vector, unsigned count)
     if (!(dev->netdev.flags & AT86RF2XX_OPT_PRELOADING)) {
         at86rf2xx_tx_exec(dev);
     }
-    /* return the number of bytes that were actually send out */
+    /* return the number of bytes that were actually loaded into the frame
+     * buffer/send out */
     return (int)len;
 }
 
@@ -195,6 +195,23 @@ static int _set_state(at86rf2xx_t *dev, netopt_state_t state)
             break;
         case NETOPT_STATE_TX:
             if (dev->netdev.flags & AT86RF2XX_OPT_PRELOADING) {
+                /* The netdev driver ISR switches the transceiver back to the
+                 * previous idle state after a completed TX. If the user tries
+                 * to initiate another transmission (retransmitting the same data)
+                 * without first going to TX_ARET_ON, the command to start TX
+                 * would be ignored, leading to a deadlock in this netdev driver
+                 * thread.
+                 * Additionally, avoids driver thread deadlock when PRELOADING
+                 * is set and the user tries to initiate TX without first calling
+                 * send() to write some frame data.
+                 */
+                if (dev->pending_tx == 0) {
+                    /* retransmission of old data, at86rf2xx_tx_prepare normally
+                     * increments this and the ISR for TX_END decrements it, to
+                     * know when to switch back to the idle state. */
+                    ++dev->pending_tx;
+                }
+                at86rf2xx_set_state(dev, AT86RF2XX_STATE_TX_ARET_ON);
                 at86rf2xx_tx_exec(dev);
             }
             break;
@@ -409,8 +426,8 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
         case NETOPT_CHANNEL:
             assert(len != sizeof(uint8_t));
             uint8_t chan = ((const uint8_t *)val)[0];
-            if (chan < AT86RF2XX_MIN_CHANNEL ||
-                chan > AT86RF2XX_MAX_CHANNEL) {
+            if ((chan < AT86RF2XX_MIN_CHANNEL)
+                || (chan > AT86RF2XX_MAX_CHANNEL)) {
                 res = -EINVAL;
                 break;
             }
@@ -529,14 +546,13 @@ static int _set(netdev_t *netdev, netopt_t opt, const void *val, size_t len)
     }
 
     /* go back to sleep if were sleeping and state hasn't been changed */
-    if ((old_state == AT86RF2XX_STATE_SLEEP) &&
-        (opt != NETOPT_STATE)) {
+    if ((old_state == AT86RF2XX_STATE_SLEEP)
+        && (opt != NETOPT_STATE)) {
         at86rf2xx_set_state(dev, AT86RF2XX_STATE_SLEEP);
     }
 
     if (res == -ENOTSUP) {
-        res = netdev_ieee802154_set((netdev_ieee802154_t *)netdev, opt,
-                                     val, len);
+        res = netdev_ieee802154_set((netdev_ieee802154_t *)netdev, opt, val, len);
     }
 
     return res;
@@ -560,8 +576,8 @@ static void _isr(netdev_t *netdev)
     /* read (consume) device status */
     irq_mask = at86rf2xx_reg_read(dev, AT86RF2XX_REG__IRQ_STATUS);
 
-    trac_status = at86rf2xx_reg_read(dev, AT86RF2XX_REG__TRX_STATE) &
-                  AT86RF2XX_TRX_STATE_MASK__TRAC;
+    trac_status = at86rf2xx_reg_read(dev, AT86RF2XX_REG__TRX_STATE)
+                  & AT86RF2XX_TRX_STATE_MASK__TRAC;
 
     if (irq_mask & AT86RF2XX_IRQ_STATUS_MASK__RX_START) {
         netdev->event_callback(netdev, NETDEV_EVENT_RX_STARTED);
@@ -569,27 +585,27 @@ static void _isr(netdev_t *netdev)
     }
 
     if (irq_mask & AT86RF2XX_IRQ_STATUS_MASK__TRX_END) {
-        if (state == AT86RF2XX_STATE_RX_AACK_ON ||
-            state == AT86RF2XX_STATE_BUSY_RX_AACK) {
+        if ((state == AT86RF2XX_STATE_RX_AACK_ON)
+            || (state == AT86RF2XX_STATE_BUSY_RX_AACK)) {
             DEBUG("[at86rf2xx] EVT - RX_END\n");
             if (!(dev->netdev.flags & AT86RF2XX_OPT_TELL_RX_END)) {
                 return;
             }
             netdev->event_callback(netdev, NETDEV_EVENT_RX_COMPLETE);
         }
-        else if (state == AT86RF2XX_STATE_TX_ARET_ON ||
-                 state == AT86RF2XX_STATE_BUSY_TX_ARET) {
+        else if ((state == AT86RF2XX_STATE_TX_ARET_ON)
+                 || (state == AT86RF2XX_STATE_BUSY_TX_ARET)) {
             /* check for more pending TX calls and return to idle state if
              * there are none */
             assert(dev->pending_tx != 0);
             if ((--dev->pending_tx) == 0) {
                 at86rf2xx_set_state(dev, dev->idle_state);
-                DEBUG("[at86rf2xx] return to state 0x%x\n", dev->idle_state);
+                DEBUG("[at86rf2xx] return to idle state 0x%x\n", dev->idle_state);
             }
 /* Only radios with the XAH_CTRL_2 register support frame retry reporting */
 #if AT86RF2XX_HAVE_RETRIES
-            dev->tx_retries = ( at86rf2xx_reg_read(dev, AT86RF2XX_REG__XAH_CTRL_2) &
-                                AT86RF2XX_XAH_CTRL_2__ARET_FRAME_RETRIES_MASK ) >>
+            dev->tx_retries = (at86rf2xx_reg_read(dev, AT86RF2XX_REG__XAH_CTRL_2)
+                               & AT86RF2XX_XAH_CTRL_2__ARET_FRAME_RETRIES_MASK) >>
                               AT86RF2XX_XAH_CTRL_2__ARET_FRAME_RETRIES_OFFSET;
 #endif
 
